@@ -20,4 +20,14 @@ public class ProductsAddPayloads {
 
         return body;
     }
+
+    public static Map<String, Object> produtoSemParametrosEspecificos(String... parametros) {
+        Map<String, Object> body = new HashMap<>(produtoValido());
+
+        for (String param : parametros) {
+            body.remove(param);
+        }
+
+        return body;
+    }
 }

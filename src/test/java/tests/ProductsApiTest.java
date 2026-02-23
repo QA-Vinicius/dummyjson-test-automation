@@ -177,4 +177,39 @@ public class ProductsApiTest extends BaseTest {
             .body("id", greaterThan(0))
             .body("title", is("Perfume Oil"));
     }
+
+    @Test
+    @DisplayName("Deve criar produto sem parâmetros")
+    public void deveCriarProdutoSemParametros() {
+        given()
+            .header("Content-Type", "application/json")
+            .body("{}")
+        .when()
+            .post(ApiPaths.PRODUCTS_ADD)
+        .then()
+            .log().ifValidationFails()
+            .statusCode(201)
+            .contentType(ContentType.JSON)
+            .body("id", notNullValue())
+            .body("id", greaterThan(0));
+    }
+
+    @Test
+    @DisplayName("Deve criar produto sem parâmetros importantes")
+    public void deveCriarProdutoSemParametrosImportantes() {
+        given()
+            .header("Content-Type", "application/json")
+            .body(ProductsAddPayloads.produtoSemParametrosEspecificos("title", "description", "price"))
+        .when()
+            .post(ApiPaths.PRODUCTS_ADD)
+        .then()
+            .log().all()
+            .statusCode(201)
+            .contentType(ContentType.JSON)
+            .body("id", notNullValue())
+            .body("id", greaterThan(0))
+            .body("$", not(hasKey("title")))
+            .body("$", not(hasKey("description")))
+            .body("$", not(hasKey("price")));
+    }
 }
