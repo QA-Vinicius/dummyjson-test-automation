@@ -6,6 +6,7 @@ import io.restassured.http.ContentType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import payloads.ProductsAddPayloads;
 
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,8 @@ import static org.hamcrest.Matchers.*;
 import static org.hamcrest.Matchers.is;
 
 public class ProductsApiTest extends BaseTest {
+
+    //Testes para GET /products
     @Test
     @DisplayName("Deve retornar produtos com sucesso")
     public void deveRetornarProdutosComSucesso() {
@@ -30,6 +33,7 @@ public class ProductsApiTest extends BaseTest {
             .body("limit", greaterThan(0));
     }
 
+    //Testes para GET /products/{id}
     @Test
     @DisplayName("Deve retornar produto por ID")
     public void deveRetornarProdutoPorId() {
@@ -93,6 +97,7 @@ public class ProductsApiTest extends BaseTest {
             .body(containsString("Cannot POST /products/"+productId+""));
     }
 
+    //Testes para GET /products/search
     @Test
     @DisplayName("Deve retornar produto por parâmetro")
     public void deveRetornarProdutoPorParametro() {
@@ -153,5 +158,23 @@ public class ProductsApiTest extends BaseTest {
             .body("total", greaterThan(0))
             .body("limit", greaterThan(0))
             .body("products.title", everyItem(notNullValue()));
+    }
+
+    //Testes para POST /products/add
+    @Test
+    @DisplayName("Deve criar produto com sucesso")
+    public void deveCriarProdutoComSucesso() {
+        given()
+            .header("Content-Type", "application/json")
+            .body(ProductsAddPayloads.produtoValido())
+        .when()
+            .post(ApiPaths.PRODUCTS_ADD)
+        .then()
+            .log().ifValidationFails()
+            .statusCode(201)
+            .contentType(ContentType.JSON)
+            .body("id", notNullValue())
+            .body("id", greaterThan(0))
+            .body("title", is("Perfume Oil"));
     }
 }
