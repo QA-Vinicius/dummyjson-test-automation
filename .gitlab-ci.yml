@@ -4,8 +4,6 @@ stages:
 dummyjson-test-job:
   stage: test
   image: maven:3.9.6-eclipse-temurin-17
-  tags:
-    - local
   script:
     - echo "Executando os cenarios de teste..."
     - mvn -B clean test
@@ -21,6 +19,6 @@ dummyjson-test-job:
       - target/surefire-reports/
       - target/site/
   only:
-    - feature/test
+    - feature/automation-tests
     - merge_requests
     - main
