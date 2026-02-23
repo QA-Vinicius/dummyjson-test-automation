@@ -8,5 +8,7 @@ public class ApiPaths {
     public static final String AUTH_LOGIN = "/auth/login";
     public static final String AUTH_PRODUCTS = "/auth/products";
     public static final String PRODUCTS = "/products";
+    public static final String PRODUCTS_ID = "/products/{id}";
+    public static final String PRODUCTS_SEARCH = "/products/search";
     public static final String PRODUCTS_ADD = "/products/add";
 }
