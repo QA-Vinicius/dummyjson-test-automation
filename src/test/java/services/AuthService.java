@@ -3,11 +3,10 @@ package services;
 import config.BaseTest;
 import endpoints.ApiPaths;
 import io.restassured.http.ContentType;
-import org.junit.jupiter.api.Test;
 import payloads.AuthPayloads;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.notNullValue;
 
 // Classe responsavel por chamar a API POST /auth/login e extrair o statusCode para se utilizar no GET /auth/products
 public class AuthService extends BaseTest {
