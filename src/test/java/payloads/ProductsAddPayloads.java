@@ -30,4 +30,12 @@ public class ProductsAddPayloads {
 
         return body;
     }
+
+    public static Map<String, Object> produtoComParametroAdicional(String chave, Object valor) {
+        Map<String, Object> body = new HashMap<>(produtoValido());
+
+        body.put(chave, valor);
+
+        return body;
+    }
 }

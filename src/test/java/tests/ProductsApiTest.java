@@ -77,9 +77,9 @@ public class ProductsApiTest extends BaseTest {
             .get(ApiPaths.PRODUCTS_ID, productId)
         .then()
             .log().ifValidationFails()
-            .statusCode(400)
+            .statusCode(404)
             .contentType(ContentType.JSON)
-            .body("message", is("Invalid product id '" + productId + "'"));
+            .body("message", is("Product with id '" + productId + "' not found"));
     }
 
     @Test
@@ -109,7 +109,7 @@ public class ProductsApiTest extends BaseTest {
             .when()
                 .get(ApiPaths.PRODUCTS_SEARCH)
             .then()
-                .log().all()
+                .log().ifValidationFails()
                 .statusCode(200)
                 .contentType(ContentType.JSON)
                 .body("products", hasSize(greaterThan(0)))
@@ -144,7 +144,7 @@ public class ProductsApiTest extends BaseTest {
     @DisplayName("Deve ignorar parâmetros diferentes de Q na busca de produto")
     public void deveIgnorarParametrosDiferentesDeQNaBuscaDeProduto() {
         String chave = "brand";
-        var valor = "Calvin Klein";
+        Object valor = "Calvin Klein";
 
         given()
             .queryParam(chave, valor)
@@ -203,7 +203,7 @@ public class ProductsApiTest extends BaseTest {
         .when()
             .post(ApiPaths.PRODUCTS_ADD)
         .then()
-            .log().all()
+            .log().ifValidationFails()
             .statusCode(201)
             .contentType(ContentType.JSON)
             .body("id", notNullValue())
@@ -211,5 +211,65 @@ public class ProductsApiTest extends BaseTest {
             .body("$", not(hasKey("title")))
             .body("$", not(hasKey("description")))
             .body("$", not(hasKey("price")));
+    }
+
+    @Test
+    @DisplayName("Deve ignorar o id informado e criar produto")
+    public void deveIgnorarIdInformadoECriarProduto() {
+        String chave = "id";
+        var valor = 1;
+
+        given()
+            .header("Content-Type", "application/json")
+            .body(ProductsAddPayloads.produtoComParametroAdicional(chave, valor))
+        .when()
+            .post(ApiPaths.PRODUCTS_ADD)
+        .then()
+            .log().ifValidationFails()
+            .statusCode(201)
+            .contentType(ContentType.JSON)
+            .body("id", notNullValue())
+            .body("id", greaterThan(0))
+            .body("id", not(valor));
+    }
+
+    @Test
+    @DisplayName("Deve ignorar parâmetros extras e criar produto")
+    public void deveIgnorarParametrosExtrasECriarProduto() {
+        String chave = "parameter";
+        var valor = 123;
+
+        given()
+            .header("Content-Type", "application/json")
+            .body(ProductsAddPayloads.produtoComParametroAdicional(chave, valor))
+        .when()
+            .post(ApiPaths.PRODUCTS_ADD)
+        .then()
+            .log().ifValidationFails()
+            .statusCode(201)
+            .contentType(ContentType.JSON)
+            .body("id", notNullValue())
+            .body("id", greaterThan(0))
+            .body("$", not(hasKey(chave)));
+    }
+
+    @Test
+    @DisplayName("Deve aceitar valor inválido para chaves")
+    public void deveAceitarValorInvalidoParaChaves() {
+        String chave = "price";
+        Object valor = "Number";
+
+        given()
+            .header("Content-Type", "application/json")
+            .body(ProductsAddPayloads.produtoComParametroAdicional(chave, valor))
+        .when()
+            .post(ApiPaths.PRODUCTS_ADD)
+        .then()
+            .log().ifValidationFails()
+            .statusCode(201)
+            .contentType(ContentType.JSON)
+            .body("id", notNullValue())
+            .body("id", greaterThan(0))
+            .body(chave, is(valor));
     }
 }
