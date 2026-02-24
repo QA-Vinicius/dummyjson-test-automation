@@ -1,93 +1,180 @@
-# dummyjson-test-automation
+# 🚀 Automação de APIs - DummyJson
+![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white) ![RESTASSURED](https://img.shields.io/badge/RESTASSURED-green?style=for-the-badge) ![image](https://user-images.githubusercontent.com/108882560/177828797-63612075-002c-49f9-85fd-66c1dc491d63.png)
+
+Este projeto, desenvolvido por [Vinícius Alves Martins](https://www.linkedin.com/in/viniciusalvesmartins/), consiste na implementação de uma suíte de testes automatizados para a API DummyJson (https://dummyjson.com), a fim de analisar o comportamento dos endpoints, validar se está de acordo com a documentação proposta e listar potenciais bugs ou pontos de melhorias para melhor funcionamento.
 
 
+## 💻 Principais Tecnologias
+* **Java 17**
+* **Maven**
+* **REST Assured**
+* **JUnit 5**
+* **GitLab CI**
 
-## Getting started
+## 🛠️ Como Executar
+Para executar este projeto, é necessário atender a alguns requisitos prévios, como a instalação e configuração do Java (versão 17 ou superior) e do Maven (versão 3.11 ou superior).
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+#### Execução Local 
+1. Clonar o projeto na máquina local
+2. Na pasta raíz do projeto, executar os comandos
+    ```
+    mvn clean test
+    mvn surefire-report:report 
+    ```
+3. Validar resultado dos testes na pasta /target
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+## 🧪 GitLab CI
+O arquivo .gitlab-ci.yml foi configurado da seguinte forma:
+```plaintext
+stages:
+  - test
 
-## Add your files
-
-* [Create](https://docs.gitlab.com/user/project/repository/web_editor/#create-a-file) or [upload](https://docs.gitlab.com/user/project/repository/web_editor/#upload-a-file) files
-* [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
-
+dummyjson-test-job:
+  stage: test
+  image: maven:3.9.6-eclipse-temurin-17
+  script:
+    - echo "Executando os cenarios de teste..."
+    - mvn -B clean test
+    - echo "Gerando relatorio de testes em HTML..."
+    - mvn -B surefire-report:report
+    - echo "Relatorio HTML gerado."
+  artifacts:
+    when: always
+    expire_in: 2 days
+    reports:
+      junit: target/surefire-reports/TEST-*.xml
+    paths:
+      - target/surefire-reports/
+      - target/site/
+  only:
+    - feature/automation-tests
+    - merge_requests
+    - main
 ```
-cd existing_repo
-git remote add origin https://gitlab.com/QA-Vinicius/dummyjson-test-automation.git
-git branch -M main
-git push -uf origin main
+
+Essa configuração assegura:
+   - Execução automática a cada push realizado na branch feature/automation-tests, merge request, e merge na branch main.
+   - Job configurado com os mesmos comandos utilizados para execução local, com adição da publicação do artifacts na pipeline.
+
+Basta acessar, dentro do projeto no GitLab, a sessão Build → Pipelines → Tests para encontrar o relatório JUnit e Build → Pipelines → Jobs para baixar os artifacts.  
+
+## 🎯 Plano de Testes
+O projeto tem como objetivo realizar os testes para os endpoints:
+- GET /test
+- GET /users 
+- GET /products 
+- GET /products/{id} 
+- POST /products/add 
+- POST /auth/login 
+- GET /auth/products
+
+A cobertura dos testes inclui cenários positivos e negativos, bem como os cenários de exceção e validação de contrato. Com isso, foi analisado se os endpoints realizam de forma correta a consulta e inserção dos dados, tratamento de erros, bem como o comportamento adequado de acordo com a documentação proposta.
+
+## 🧠 Estratégia de Testes
+A automação foi construída contemplando validações como:
+
+**1. Testes funcionais:**
+   - Status code
+   - Consultas e inserção de dados 
+   - Campos obrigatórios
+   - Retorno de valores
+   - Estrutura do JSON
+
+**2. Testes negativos:**
+   - Parâmetros inválidos e/ou inexistentes
+   - Campos inválidos
+   - Métodos não permitidos
+   - Payloads inconsistentes
+
+**3. Testes de autenticação**
+   - Autenticação com credenciais corretas
+   - Geração de token de acesso
+   - Acesso à endpoint protegido (GET /auth/products)
+   - Tentativa de autenticação com credenciais inválidas
+   - Tentativa de acesso sem usuário e/ou senha
+   - Tentativa de acesso com token de acesso expirado ou inválido
+   - Tentativa de acesso à endpoint protegido sem token de acesso
+
+**4. Testes de contrato**
+   - Validação de campos obrigatórios
+   - Tamanho mínimo de listas
+   - Estrutura de response
+
+## ⚙️ Estrutura do Projeto
+Para atender ao plano de testes elaborado, foi desenhada a seguinte arquitetura para o projeto:
+
+```plaintext
+ test
+ └── java
+     ├── config
+     │   └── BaseTest.java
+     ├── endpoints
+     │   └── ApiPaths.java
+     ├── payloads
+     │   ├── AuthPayloads.java
+     │   └── ProductsAddPayloads.java
+     ├── services
+     │   └── AuthService.java
+     └── tests
+         ├── AuthLoginApiTest.java
+         ├── AuthProductsApiTest.java
+         ├── ProductsApiTest.java
+         ├── TestApiTest.java
+         └── UsersApiTest.java
 ```
 
-## Integrate with your tools
+Essa árvore foi estruturada a fim de facilitar o reuso de classes e métodos, a separação de responsabilidades e, consequentemente, permitir que a automação seja escalável e de fácil manutenção. Segue a lógica instituida para cada pacote:
 
-* [Set up project integrations](https://gitlab.com/QA-Vinicius/dummyjson-test-automation/-/settings/integrations)
+- **Pacote config:** Armazena a classe BaseTest, instanciando o @BeforeAll com a baseURI da API do dummyjson para utilização das classes de teste.
+- **Pacote endpoints:** Armazena os endpoints testados em variáveis, facilitando reuso e legibilidade do código.
+- **Pacote payloads:** Armazena classes com métodos para manipulação dos corpos de requisições utilizadas, permitindo adição, alteração e remoção de campos de forma simples fora das classes de teste.
+- **Pacote service:** Contém a classe realiza a autenticação fora externa ao teste, para geração do accessToken necessário para os testes do endpoint que requer autenticação.
+- **Pacote tests:** Contém as principais classes do projeto, nas quais estão localizados os testes. As classes foram divididas por endpoints para melhor divisão e clareza dos testes. 
 
-## Collaborate with your team
 
-* [Invite team members and collaborators](https://docs.gitlab.com/user/project/members/)
-* [Create a new merge request](https://docs.gitlab.com/user/project/merge_requests/creating_merge_requests/)
-* [Automatically close issues from merge requests](https://docs.gitlab.com/user/project/issues/managing_issues/#closing-issues-automatically)
-* [Enable merge request approvals](https://docs.gitlab.com/user/project/merge_requests/approvals/)
-* [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+## 📊 Relatório dos Testes
+Durante a realização dos testes descritos nas sessões anteriores, foram identificados alguns comportamentos relevantes, que devem ser analisados a fim de propor possíveis planos de ação. 
 
-## Test and Deploy
+### 🐞 Bug Identificado
+#### Endpoint /products/add não faz validação correta de tipo de campo
+- **Situação:** Endpoint tem como função realizar a criação de produtos de acordo com os parâmetros enviados na requisição. Porém não está realizando validação para o tipo dos campos, e ao informar um valor não numérico para o campo *price*, não houve nenhum tratamento de erro.
 
-Use the built-in continuous integration in GitLab.
+- **Tarefa:** Cenário enviando parâmetros necessários para criação de produto, porém informando no JSON a chave *"price"* com valor *"Number"*.
 
-* [Get started with GitLab CI/CD](https://docs.gitlab.com/ci/quick_start/)
-* [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/user/application_security/sast/)
-* [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/topics/autodevops/requirements/)
-* [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/user/clusters/agent/)
-* [Set up protected environments](https://docs.gitlab.com/ci/environments/protected_environments/)
+- **Resultado Atual:** Status code 201 CREATED e produto criado com "price": "Number".
 
+- **Resultado Esperado:** Status code 400 Bad Request e mensagem de erro indicando que o tipo informado não é válido para o campo.
+
+### ✨ Pontos Levantados para Melhoria
+#### 1. Validações de ID com divergência entre endpoints /products/{id} e /users/{id}
+Foi realizado o mesmo tipo de teste para os dois endpoints, o qual consistia em validar o comportamento ao informar, no campo *id*, um valor não numérico. Com isso, foi constatado que os endpoints retornam tratamentos de erro diferentes para a mesma situação.  
+
+- **/users/{id}:** 
+  - Valor enviado para id: "emilia" 
+  - Status code retornado: 400 Bad Request
+  - Mensagem de erro retornada: "Invalid user id 'emilia'"
+
+  
+- **/products/{id}:**
+  - Valor enviado para id: "essence"
+  - Status code retornado: 404 Not Found
+  - Mensagem de erro retornada: "Product with id 'essence' not found"
+
+A recomendação sugerida consiste em padronizar o tratamento de tipo inválido para ambos os endpoints:
+   - Status code: 400 Bad Request
+   - Template de mensagem de erro: "Invalid user id 'emilia'" ou "Invalid product id 'essence'"
+
+#### 2. Retorno 404 para testes com método não permitido nos endpoints /products/{id} e /users/{id}
+Os endpoints /products/{id} e /users/{id} realizam requisições do tipo GET, pois se trata de uma consulta de produtos e usuários, respectivamente. Ao realizar um teste muito comum em APIs, alterando o método da requisição para POST, o status code retornado foi 404 Not Found, enquanto o retorno adequado seria 405 Method Not Allowed.
+
+A recomendação é alterar a regra de negócio dos endpoints em questão para que passe a retornar 405 Method Not Allowed, para que esteja de acordo com a validação de contrato e semântica correta para essa situação.
+
+#### 3. Comportamento de retorno 403 Forbidden descrito na documentação mas não validado em teste.
+Para o endpoint /auth/products, a documentação exibe um response com retorno 403 Forbidden e mensagem de erro: "Authentication Problem". No entanto, ao realizar os testes negativos e de exceção para esse endpoint, esse erro não foi exibido.
+
+Foi realizado um teste de tentativa de acesso ao endpoint sem informar o token de acesso, porém essa ação retornou status code 401 Unauthorized e mensagem de erro: "Access Token is required". 
+
+Em análise mais detalhada do endpoint e seu response padrão, foi encontrado, para cada usuário da lista retornada, o atributo "role", podendo ser declarado como "admin", "moderator" ou "user". Foram realizados testes com usuários dos três tipos de "role", especialmente com o "role": "user", visto que tende a ser uma função com menos privilégios e permissões, porém em nenhum dos casos foi possível obter o retorno do status code 403 Forbidden conforme esperado.
+
+Como recomendação, deve se informar, na documentação, qual a regra de negócio do endpoint que reflete o comportamento descrito, para que possa ser replicado em testes.
 ***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
