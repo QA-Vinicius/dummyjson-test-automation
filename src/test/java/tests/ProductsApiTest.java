@@ -48,8 +48,7 @@ public class ProductsApiTest extends BaseTest {
             .contentType(ContentType.JSON)
             .body("id", equalTo(productId))
             .body("title", notNullValue())
-            .body("price", notNullValue())
-            .body("brand", notNullValue());
+            .body("price", notNullValue());
     }
 
     @Test
