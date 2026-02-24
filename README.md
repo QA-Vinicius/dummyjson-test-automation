@@ -100,6 +100,9 @@ A automação foi construída contemplando validações como:
    - Tamanho mínimo de listas
    - Estrutura de response
 
+**5. Testes de cobertura adicional (exploratório)**
+  - Validação extra de comportamento de busca por parâmetro com os endpoints GET /users/search e GET /products/search (não afetam o escopo principal)
+
 ## ⚙️ Estrutura do Projeto
 Para atender ao plano de testes elaborado, foi desenhada a seguinte arquitetura para o projeto:
 
@@ -145,7 +148,7 @@ Durante a realização dos testes descritos nas sessões anteriores, foram ident
 
 - **Resultado Esperado:** Status code 400 Bad Request e mensagem de erro indicando que o tipo informado não é válido para o campo.
 
-### ✨ Pontos Levantados para Melhoria
+### ✨ Pontos Levantados para Melhorias
 #### 1. Validações de ID com divergência entre endpoints /products/{id} e /users/{id}
 Foi realizado o mesmo tipo de teste para os dois endpoints, o qual consistia em validar o comportamento ao informar, no campo *id*, um valor não numérico. Com isso, foi constatado que os endpoints retornam tratamentos de erro diferentes para a mesma situação.  
 
