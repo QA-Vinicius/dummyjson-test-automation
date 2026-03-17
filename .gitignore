@@ -1,0 +1,8 @@
+### Maven
+target/
+
+### IntelliJ IDEA
+.idea/
+.idea/compiler.xml
+.idea/modules.xml
+*.iml
